@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-right: 10px;
+            width: 300px;
+        }
+        #output {
+            margin-top: 20px;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+<h1>Weather Application</h1>
+
+<div>
+    <input type="text" id="locationInput" placeholder="Enter location..." />
+    <button id="searchLocation">Search Weather by Location</button>
+    <button id="getForecast">Get Forecast</button>
+    <button id="getSunriseSunset">Get Sunrise and Sunset</button>
+</div>
+
+<div id="output">
+    <h3>Response:</h3>
+    <pre id="responseData">Click a button to fetch data</pre>
+</div>
+
+<script>
+    async function fetchData(endpoint) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const data = await response.json();
+            document.getElementById('responseData').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            document.getElementById('responseData').textContent = `Error: ${error.message}`;
+        }
+    }
+
+    document.getElementById('searchLocation').addEventListener('click', () => {
+        const location = document.getElementById('locationInput').value;
+        const date = prompt('Enter date (YYYY-MM-DD):');
+        if (location && date) {
+            fetchData(`/api/location-weather?location=${encodeURIComponent(location)}&date=${encodeURIComponent(date)}`);
+        } else {
+            alert('Please enter both location and date!');
+        }
+    });
+
+    document.getElementById('getForecast').addEventListener('click', () => {
+        const location = document.getElementById('locationInput').value;
+        if (location) {
+            fetchData(`/api/forecast?location=${encodeURIComponent(location)}`);
+        } else {
+            alert('Please enter a location!');
+        }
+    });
+
+    document.getElementById('getSunriseSunset').addEventListener('click', () => {
+        const location = document.getElementById('locationInput').value;
+        if (location) {
+            fetchData(`/features/sunrise-sunset?location=${encodeURIComponent(location)}`);
+        } else {
+            alert('Please enter a location!');
+        }
+    });
+
+</script>
+</body>
+</html>
