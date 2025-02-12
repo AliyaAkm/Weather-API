@@ -4,42 +4,30 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Application</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 5px;
-        }
-        input {
-            padding: 10px;
-            font-size: 16px;
-            margin-right: 10px;
-            width: 300px;
-        }
-        #output {
-            margin-top: 20px;
-        }
-        pre {
-            background-color: #f4f4f4;
-            padding: 10px;
-            border: 1px solid #ddd;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 <h1>Weather Application</h1>
+<h1 id="welcomeMessage">Добро пожаловать!</h1>
+
+<div id="customAlert" class="alert" style="display:none;">
+    <span id="alertMessage"></span>
+  </div>
+  
+<div id="auth-buttons">
+    <button id="signUpBtn">Sign Up</button>
+    <button id="logInBtn">Log In</button>
+    <button id="logOutBtn" style="display: none;">Log Out</button>
+</div>
 
 <div>
     <input type="text" id="locationInput" placeholder="Enter location..." />
     <button id="searchLocation">Search Weather by Location</button>
     <button id="getForecast">Get Forecast</button>
     <button id="getSunriseSunset">Get Sunrise and Sunset</button>
+    <button id="aboutProject">About Project</button>
+    <button id="editAboutBtn" style="display: none;">Edit</button> 
 </div>
 
 <div id="output">
@@ -47,27 +35,132 @@
     <pre id="responseData">Click a button to fetch data</pre>
 </div>
 
+<div id="about">
+    <h2>Weather-API</h2>
+    <div id="viewAbout">
+        <p>Hello! Welcome to the Weather-API project repository. This is a web application designed to provide weather data based on location or specific queries.</p>
+        <h3>About Project 🌦️</h3>
+        <p>The Weather-API project is a web-based service that allows users to fetch and display current weather conditions, forecasts, and other meteorological data. The backend is developed in JavaScript using Node.js, while HTML, CSS, and JavaScript (with frameworks, if applicable) power the frontend interface.</p>
+        <h3>Team 👩‍💻👨‍💻</h3>
+        <ul>
+            <li>Yerkezhan Akhmetova</li>
+            <li>Aliya Akmagambetova</li>
+            <li>Bexultan Alpysbai</li>
+            <li>Nuray Kairatbekkyzy</li>
+        </ul>
+        <h3>Goal of the Project 🚀</h3>
+        <p>The goal of the Weather-API project is to create a robust and user-friendly weather service with the following objectives:</p>
+        <ol>
+            <li>Accuracy: Provide reliable and up-to-date weather information.</li>
+            <li>Speed: Ensure quick responses to user queries with minimal latency.</li>
+            <li>Usability: Develop an intuitive interface for effortless interaction.</li>
+            <li>Scalability: Allow the service to handle increasing traffic and requests.</li>
+        </ol>
+        <h3>How to Use 🛠️</h3>
+        <p>Follow these steps to run the project:</p>
+        <ol>
+            <li>Clone the repository:
+                <pre>git clone https://github.com/erkezhan02/weather-api</pre>
+            </li>
+            <li>Navigate to the project directory:
+                <pre>cd weather-api</pre>
+            </li>
+            <li>Install dependencies:
+                <pre>npm install</pre>
+            </li>
+            <li>Run the application:
+                <pre>npm start</pre>
+            </li>
+            <li>Access the application:
+                <pre>http://localhost:3000</pre>
+            </li>
+        </ol>
+    </div>
+    <div id="editAbout" style="display: none;">
+        <textarea id="aboutText" style="width: 100%; height: 500px;"></textarea>
+        <button id="saveAboutBtn">Сохранить</button>
+        <button id="cancelEditBtn">Отмена</button>
+    </div>
+</div>
+
 <script>
-    async function fetchData(endpoint) {
-        try {
-            const response = await fetch(endpoint);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            const data = await response.json();
-            document.getElementById('responseData').textContent = JSON.stringify(data, null, 2);
-        } catch (error) {
-            document.getElementById('responseData').textContent = `Error: ${error.message}`;
+    function showAlert(message) {
+        const alertBox = document.getElementById('customAlert');
+        const alertMessage = document.getElementById('alertMessage');
+
+        alertMessage.textContent = message;
+        alertBox.style.display = 'block';
+
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+        }, 5000);
+    }
+
+    function getToken() {
+        return localStorage.getItem('token');
+    }
+
+    function getUserRole() {
+        return localStorage.getItem('userRole');
+    }
+
+
+
+
+    function logout() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+        updateAuthButtons();
+        window.location.href = '/login';
+    }
+
+    function updateAuthButtons() {
+        const token = getToken();
+        const userRole = getUserRole();
+
+        document.getElementById('logInBtn').style.display = token ? 'none' : 'inline';
+        document.getElementById('signUpBtn').style.display = token ? 'none' : 'inline';
+        document.getElementById('logOutBtn').style.display = token ? 'inline' : 'none';
+
+        if (userRole === 'admin') {
+            document.getElementById('editAboutBtn').style.display = 'inline';
+        } else {
+            document.getElementById('editAboutBtn').style.display = 'none';
         }
     }
 
+    async function fetchData(endpoint) {
+        try {
+            const token = getToken();
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const response = await fetch(endpoint, { headers });
+
+            if (response.status === 401) {
+                showAlert('Сессия истекла. Пожалуйста, войдите снова.');
+                logout();
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(`Ошибка! Статус: ${response.status}`);
+            }
+
+            const data = await response.json();
+            document.getElementById('responseData').textContent = JSON.stringify(data, null, 2);
+        } catch (error) {
+            document.getElementById('responseData').textContent = `Ошибка: ${error.message}`;
+        }
+    }
+
+
     document.getElementById('searchLocation').addEventListener('click', () => {
         const location = document.getElementById('locationInput').value;
-        const date = prompt('Enter date (YYYY-MM-DD):');
+        const date = prompt('Введите дату (YYYY-MM-DD):');
         if (location && date) {
             fetchData(`/api/location-weather?location=${encodeURIComponent(location)}&date=${encodeURIComponent(date)}`);
         } else {
-            alert('Please enter both location and date!');
+            showAlert('Введите и местоположение, и дату!');
         }
     });
 
@@ -76,7 +169,7 @@
         if (location) {
             fetchData(`/api/forecast?location=${encodeURIComponent(location)}`);
         } else {
-            alert('Please enter a location!');
+            showAlert('Введите местоположение!');
         }
     });
 
@@ -85,10 +178,49 @@
         if (location) {
             fetchData(`/features/sunrise-sunset?location=${encodeURIComponent(location)}`);
         } else {
-            alert('Please enter a location!');
+            showAlert('Введите местоположение!');
         }
     });
 
+    document.getElementById('aboutProject').addEventListener('click', () => {
+        document.getElementById('about').style.display = 'block';
+        document.getElementById('output').style.display = 'none';
+    });
+
+    document.getElementById('signUpBtn').addEventListener('click', () => {
+        window.location.href = '/signup';
+    });
+
+    document.getElementById('logInBtn').addEventListener('click', () => {
+        window.location.href = '/login';
+    });
+
+    document.getElementById('logOutBtn').addEventListener('click', logout);
+
+    document.getElementById('editAboutBtn').addEventListener('click', () => {
+        if (getUserRole() !== 'admin') {
+            showAlert('У вас нет прав редактирования.');
+            return;
+        }
+        document.getElementById('viewAbout').style.display = 'none';
+        document.getElementById('editAbout').style.display = 'block';
+        document.getElementById('aboutText').value = document.getElementById('viewAbout').innerHTML;
+    });
+
+    document.getElementById('saveAboutBtn').addEventListener('click', () => {
+        document.getElementById('viewAbout').innerHTML = document.getElementById('aboutText').value;
+        document.getElementById('viewAbout').style.display = 'block';
+        document.getElementById('editAbout').style.display = 'none';
+    });
+
+    document.getElementById('cancelEditBtn').addEventListener('click', () => {
+        document.getElementById('viewAbout').style.display = 'block';
+        document.getElementById('editAbout').style.display = 'none';
+    });
+
+    window.onload = updateAuthButtons;
 </script>
+
+
 </body>
 </html>

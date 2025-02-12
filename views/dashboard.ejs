@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<h2 id="welcomeMessage">Добро пожаловать!</h2>
+
+<p>Вы успешно вошли в систему.</p>
+
+<div>
+    <input type="text" id="locationInput" placeholder="Введите локацию..." />
+    <button id="searchLocation">🌍 Поиск погоды</button>
+</div>
+
+<a href="#" class="logout-btn" id="logout">🚪 Выйти</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            window.location.href = "/login";
+            return;
+        }
+
+        try {
+            const response = await fetch("/protected/dashboard", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error("Токен недействителен");
+            }
+
+            const data = await response.json();
+            document.getElementById("welcomeMessage").innerText = `Добро пожаловать, ${data.message}`;
+        } catch (error) {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

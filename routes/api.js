@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const apiController = require('../controllers/apiController'); // Require API controller
-const authController = require('../controllers/authenticationController'); // Require Auth controller
+const apiController = require('../controllers/apiController');
+const featuresController = require('../controllers/featuresController');
 
-// API routes
-router.get('/forecast', apiController.getForecast); // Get weather forecast
-router.get('/location-weather', apiController.getLocationWeather); // Get weather by location
-
-// DELETE route for API key
-router.delete('/key/:id', authController.deleteApiKey); // Delete an API key
+// API Routes
+router.get('/forecast', apiController.getForecast);
+router.get('/location-weather', apiController.getLocationWeather);
+router.get('/sunrise-sunset', featuresController.getSunriseSunset);
 
 module.exports = router;

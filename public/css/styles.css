@@ -1,0 +1,109 @@
+/* Общие стили */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to right, #3a7bd5, #3a6073);
+    color: white;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+body.test-environment {
+    background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+body.test-environment .container {
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    padding: 50px;
+    border-radius: 25px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+h1, h2 {
+    font-weight: 600;
+}
+
+/* Контейнер */
+.container {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопки */
+button {
+    background: linear-gradient(135deg, #ff7eb3, #ff758c);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+    margin: 5px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 117, 140, 0.3);
+}
+
+/* Поле ввода */
+input {
+    width: 80%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: none;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+/* Блок вывода данных */
+#output {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+pre {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* Блок About Project */
+#about {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Кнопка выхода */
+.logout-btn {
+    background: linear-gradient(135deg, #ff9966, #ff5e62);
+    padding: 10px 20px;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, #ff5e62, #ff9966);
+    box-shadow: 0 5px 15px rgba(255, 94, 98, 0.3);
+}

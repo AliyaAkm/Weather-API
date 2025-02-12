@@ -1,0 +1,15 @@
+// docker
+docker start weather-app-container  // start
+docker ps
+docker stop weather-app-container
+
+// заново собрать(обновить)
+docker stop weather-app-container
+docker rm weather-app-container
+docker build -t weather-api .
+docker run -d -p 3001:3001 --name weather-app-container weather-api
+docker start weather-app-container
+
+// запускать тесты
+npm test
+npm test -- --detectOpenHandles

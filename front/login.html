@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f44336;
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 9999;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="customAlert" class="alert">
+        <span id="alertMessage"></span>
+    </div>
+
+    <h1>Login</h1>
+    <div class="form-container">
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+        
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+        
+            <button type="submit">Log In</button>
+        </form>
+        
+        <!-- OTP форма -->
+        <div id="otp-section" style="display: none;">
+            <label for="otp">Enter OTP:</label>
+            <input type="text" id="otp" required>
+            <button id="verify-btn">Verify OTP</button>
+        </div>
+    </div>
+    <script>
+        function showAlert(message) {
+            const alertBox = document.getElementById('customAlert');
+            const alertMessage = document.getElementById('alertMessage');
+
+            if (!alertBox || !alertMessage) {
+                console.error("Элементы alertBox или alertMessage не найдены.");
+                return;
+            }
+
+            alertMessage.textContent = message;
+            alertBox.style.display = 'block';
+
+            // Автоматически скрываем уведомление через 3 секунды
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 3000);
+        }
+
+        if (window.location.hostname === "localhost") {
+            document.body.classList.add("test-environment");
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            if (!email || !password) {
+                showAlert("Введите email и пароль!");
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3001/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `Ошибка: ${response.status}`);
+                }
+
+                const result = await response.json();
+                showAlert("Введите OTP, отправленный на email!");
+                document.getElementById('otp-section').style.display = 'block';
+
+            } catch (error) {
+                console.error("Ошибка при входе:", error);
+                showAlert(`Ошибка входа: ${error.message}`);
+            }
+        });
+
+        document.getElementById('verify-btn').addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const otp = document.getElementById('otp').value;
+
+            try {
+                const response = await fetch('/auth/verify-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('token', result.token); // Сохраняем токен
+                    window.location.href = '/index.html';
+                } else {
+                    alert(result.message || 'Ошибка при верификации OTP');
+                }
+            } catch (error) {
+                console.error('Ошибка сети:', error);
+            }
+        });
+
+
+
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+
+
+
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            updateAuthButtons();
+            window.location.href = '/login';
+        }
+
+        function updateAuthButtons() {
+            const token = getToken();
+            document.getElementById('logInBtn').style.display = token ? 'none' : 'inline';
+            document.getElementById('signUpBtn').style.display = token ? 'none' : 'inline';
+            document.getElementById('logOutBtn').style.display = token ? 'inline' : 'none';
+
+            if (localStorage.getItem('userRole') === 'admin') {
+                document.getElementById('editAboutBtn').style.display = 'inline';
+            } else {
+                document.getElementById('editAboutBtn').style.display = 'none';
+            }
+        }
+
+        window.onload = updateAuthButtons;
+        document.getElementById('logOutBtn').addEventListener('click', logout);
+    </script>
+
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+
+<h2>Вход</h2>
+
+<% if (typeof error !== "undefined" && error) { %>
+    <p class="error"><%= error %></p>
+<% } %>
+
+<form id="loginForm">
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit" class="submit-btn">Войти</button>
+</form>
+
+<p>Нет аккаунта? <a href="/register">Зарегистрируйтесь</a></p>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        try {
+            const response = await fetch("/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || "Ошибка сервера");
+            }
+
+            const data = await response.json();
+            localStorage.setItem("token", data.token);
+            window.location.href = "/dashboard";
+        } catch (error) {
+            alert("Ошибка: " + error.message);
+        }
+    });
+</script>
+
+<%- include('partials/footer') %>

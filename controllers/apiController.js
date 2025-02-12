@@ -1,6 +1,5 @@
 const { weatherData } = require('../helpers/weatherData');
 
-// Get weather forecast
 exports.getForecast = (req, res) => {
   const { location } = req.query;
 
@@ -8,7 +7,7 @@ exports.getForecast = (req, res) => {
     return res.status(400).send({ message: 'Location is required' });
   }
 
-  const filteredData = weatherData.filter((data) => data.name === location);
+  const filteredData = weatherData.filter((data) => data.name.toLowerCase() === location.toLowerCase());
 
   if (filteredData.length === 0) {
     return res.status(404).send({ message: `No weather data found for ${location}` });
@@ -25,39 +24,23 @@ exports.getForecast = (req, res) => {
   });
 };
 
-// Get weather data by location and date
 exports.getLocationWeather = (req, res) => {
   try {
-    const { location, date, attribute } = req.query;
+    const { location, date } = req.query;
 
     if (!location || !date) {
       return res.status(400).send({ message: 'Location and date are required' });
     }
 
     const filteredData = weatherData.filter(
-        (data) => data.name === location && data.datetime === date
+        (data) => data.name.toLowerCase() === location.toLowerCase() && data.datetime === date
     );
 
     if (filteredData.length === 0) {
       return res.status(404).send({ message: `Weather data for ${location} on ${date} not found` });
     }
 
-    if (!attribute) {
-      return res.send(filteredData);
-    }
-
-    const weather = filteredData[0];
-    const validAttributes = [
-      'tempmax', 'tempmin', 'feelslike', 'humidity', 'precipprob',
-      'snow', 'windspeed', 'sealevelpressure', 'cloudcover', 'uvindex',
-      'sunrise', 'sunset', 'moonphase'
-    ];
-
-    if (validAttributes.includes(attribute)) {
-      return res.send({ [attribute]: weather[attribute] });
-    }
-
-    return res.status(400).send({ message: `Invalid attribute requested. Valid attributes are: ${validAttributes.join(', ')}` });
+    return res.send(filteredData);
   } catch (error) {
     console.error('Error in getLocationWeather:', error);
     return res.status(500).send({ message: 'Internal Server Error', error: error.message });

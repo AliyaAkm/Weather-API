@@ -2,22 +2,27 @@ const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const path = require('path');
 const csv = require('csv-parser');
+const authenticationController = require('./controllers/authController');
+require('dotenv').config();
 
-let weatherData = [];
 let client;
-let collection;
+let weatherCollection;
 
-// Function to connect to MongoDB
+// Reusable function to initialize MongoDB connection
 async function initMongoDB() {
     try {
-        client = new MongoClient('mongodb+srv://username:password@cluster.mongodb.net/', {
+        client = new MongoClient(process.env.MONGO_URI, {
             useNewUrlParser: true,
             useUnifiedTopology: true
         });
+
         await client.connect();
         console.log('Connected to MongoDB!');
-        const db = client.db('weather');
-        collection = db.collection('weather');
+
+        const db = client.db('api');
+        weatherCollection = db.collection('weather');
+
+        console.log('Collections initialized:', { weatherCollection });
     } catch (error) {
         console.error(`Error connecting to MongoDB: ${error.message}`);
         process.exit(1);
@@ -27,10 +32,14 @@ async function initMongoDB() {
 // Parse CSV and insert data into MongoDB
 const parseCSV = async () => {
     const filePath = path.join(__dirname, '../data/AstAlmShym 2025-01-01 to 2025-01-21.csv');
+    console.log('CSV file path:', filePath);  // Log file path
+
+    const weatherData = [];
 
     fs.createReadStream(filePath)
         .pipe(csv())
         .on('data', (row) => {
+            console.log('Parsed row:', row);  // Log each parsed row
             weatherData.push({
                 name: row.name,
                 datetime: row.datetime,
@@ -42,13 +51,14 @@ const parseCSV = async () => {
         })
         .on('end', async () => {
             console.log('CSV file processed.');
+            console.log(weatherData);  // Log the parsed data to check
 
             try {
-                if (collection) {
+                if (weatherCollection) {
                     for (const data of weatherData) {
-                        const exists = await collection.findOne({ datetime: data.datetime });
+                        const exists = await weatherCollection.findOne({ datetime: data.datetime });
                         if (!exists) {
-                            await collection.insertOne(data);
+                            await weatherCollection.insertOne(data);
                         }
                     }
                     console.log('Data successfully added.');
@@ -56,7 +66,7 @@ const parseCSV = async () => {
                     console.error('MongoDB collection not available.');
                 }
             } catch (error) {
-                console.error('Error inserting data into MongoDB:', error);
+                console.error('Error inserting data into MongoDB:', error.stack);  // Log full error
             }
         });
 };
@@ -66,6 +76,12 @@ const parseCSV = async () => {
     await initMongoDB();
     parseCSV();
 })();
+
+// Export the authentication functions
+module.exports = {
+    signup: authenticationController.signup,
+    login: authenticationController.login,
+};
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
